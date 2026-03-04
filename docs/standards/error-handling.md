@@ -1,5 +1,7 @@
 # Error Handling & Logging
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Use structured JSON logging exclusively. Every log entry must include: `timestamp`, `level`, `message`, `correlation_id`, `service_name`.

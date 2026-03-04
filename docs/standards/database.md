@@ -1,5 +1,7 @@
 # Database Practices
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Use versioned, reversible migrations. Every migration must have an `up` and `down` path. Name migrations with timestamps, not sequence numbers.

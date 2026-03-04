@@ -1,5 +1,7 @@
 # API Design
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Version APIs from the start. Use URL path versioning (`/api/v1/`). Plan for v2 coexistence.

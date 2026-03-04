@@ -1,5 +1,7 @@
 # Code Quality
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Follow a consistent project structure. Group by domain/feature, not by technical layer. Prefer `internal/users/handler.go` over `handlers/users.go`.

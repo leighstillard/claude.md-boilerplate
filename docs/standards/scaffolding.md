@@ -1,5 +1,7 @@
 # Scaffolding & External Dependencies
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 This file covers the grey zone: things Claude Code can scaffold or generate, but the user must operationalise. Every item here follows the SCAFFOLD / FLAG pattern.
 
 ## Containerisation

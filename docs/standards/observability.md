@@ -1,5 +1,7 @@
 # Observability
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Instrument with OpenTelemetry as the standard. Use the OTel SDK for the project language (Go: `go.opentelemetry.io/otel`, Python: `opentelemetry-api`, TS: `@opentelemetry/api`).

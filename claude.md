@@ -39,11 +39,29 @@
 - Every test suite must include: happy path, edge cases, error/failure conditions, auth enforcement, tenant isolation.
 - Specifically test that user A cannot access user B's data.
 
+### MCP Server Safety
+
+- Never create, modify, or delete cloud resources without explicit user confirmation. Describe what will happen first.
+- State the estimated cost before creating any resource with ongoing charges.
+- Always confirm the target environment (dev/staging/prod) before mutating operations.
+- Tag every cloud resource created: `Project`, `Environment`, `CreatedBy: claude-code`.
+- Read `docs/standards/mcp-safety.md` before using any MCP server that can mutate external state.
+
 ### Error Handling
 
 - No swallowed exceptions. Every catch block must handle, log, or re-throw.
 - User-facing errors: generic, safe, no internal details. Internal errors: specific, contextual, actionable.
 - Every log entry: structured JSON, correlation ID, timestamp, service name.
+
+### MCP Server Usage
+
+- Default to read-only. Only use write operations when explicitly needed for the current task.
+- AWS MCP must be read-only. Never create, modify, or delete AWS resources directly via MCP. Propose all changes as CloudFormation templates with a cost summary.
+- Confirm before mutating. Any operation that creates, modifies, or deletes infrastructure requires explicit user confirmation.
+- Cheapest viable option. When proposing cloud resources, use the smallest option that works. Flag costs before the user deploys anything.
+- Tag everything in generated CloudFormation/IaC templates with `created-by: claude-code`, `project`, and `environment` at minimum.
+- Never modify production resources without double-confirming the target environment with the user.
+- Read `docs/standards/mcp-safety.md` before any MCP server interaction that involves write operations.
 
 ## Detailed Standards
 
@@ -59,3 +77,4 @@ Read the relevant file before working in that domain:
 - [Database](docs/standards/database.md)
 - [Code Quality](docs/standards/code-quality.md)
 - [Scaffolding & External Dependencies](docs/standards/scaffolding.md)
+- [MCP Server Safety](docs/standards/mcp-safety.md)

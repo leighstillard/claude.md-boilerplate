@@ -1,5 +1,7 @@
 # Data Privacy & Tenant Isolation
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Scope every data query by tenant ID. Implement this at the repository/data access layer so individual queries cannot bypass it.

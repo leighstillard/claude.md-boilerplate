@@ -1,5 +1,7 @@
 # Secrets Management
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Read all secrets from environment variables or a config abstraction layer. Centralise this in a single config module.

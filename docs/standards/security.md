@@ -1,5 +1,7 @@
 # Security Standards
 
+> **Last reviewed:** March 2026. If this date is more than 6 months ago, ask Claude to review this file against current best practices before relying on it.
+
 ## DO
 
 - Parameterise all database queries. Use ORM query builders or prepared statements.
