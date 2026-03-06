@@ -112,6 +112,7 @@ docs/
     code-quality.md                  # Project structure, naming, dependencies
     scaffolding.md                   # Dockerfiles, CI configs, IaC, runbooks (grey zone)
     mcp-safety.md                    # MCP server guardrails, cost traps, risk warnings
+    workflow-discipline.md           # Assumption surfacing, simplicity, surgical changes, close the loop
 ```
 
 ## Technology Opinions
