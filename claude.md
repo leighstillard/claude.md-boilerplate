@@ -51,7 +51,7 @@
 
 ### MCP Server Safety
 
-- Default to read-only. Only use write operations when explicitly needed for the current task.
+- All tools and integrations are read-only by default. Write, mutate, or destroy operations require explicit user approval and must be logged (who approved, what changed, which environment).
 - AWS MCP must be read-only. Propose all changes as CloudFormation templates with a cost summary.
 - Never create, modify, or delete cloud resources without explicit user confirmation. Describe what will happen, state the estimated cost, and confirm the target environment (dev/staging/prod) first.
 - Cheapest viable option. Use the smallest resource that works. Flag costs before the user deploys anything.

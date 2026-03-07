@@ -178,5 +178,5 @@ These are primarily read-only analysis tools and carry lower risk. Standard prec
 - **Confirm before mutating.** Any operation that creates, modifies, or deletes resources requires explicit user confirmation. Repeat back what will happen and wait for approval.
 - **Cheapest viable option.** When proposing cloud resources in CloudFormation or IaC templates, default to the smallest, cheapest option that meets the stated requirement. Include a cost summary.
 - **No assumptions about environment.** Always confirm whether an operation targets dev, staging, or production. If unclear, ask.
-- **Audit trail.** Tag or label all resources in generated templates so they can be identified and cleaned up. Include `created-by: claude-code` or equivalent.
+- **Audit trail.** Tag or label all resources in generated templates so they can be identified and cleaned up. Include `created-by: claude-code` or equivalent. For every approved write or destructive action, log: what was approved, who approved it, which environment was targeted, and when. This applies to all tools and integrations, not just MCP servers.
 - **Principle of least privilege.** MCP server credentials should have the minimum permissions needed. Flag if credentials appear to have overly broad access.
