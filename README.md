@@ -233,6 +233,21 @@ The practical takeaway: if you connect the AWS, GitHub, Terraform, and one obser
 
 **Maintenance burden.** Standards evolve. OpenTelemetry APIs change, AWS launches new services, new vulnerability classes emerge. This template needs periodic review, same as any living standard.
 
+## Recommended Developer Tools
+
+### RTK (Rust Token Killer)
+
+[RTK](https://github.com/russ-mcp/rtk) is a CLI proxy that filters and compresses tool output before it reaches Claude Code's context window, saving 60–90% of tokens on common dev operations (git, ls, test runners, Docker, kubectl, etc.). It works via a Claude Code hook that transparently rewrites Bash commands — no changes to your project `CLAUDE.md` required.
+
+RTK is a per-developer tool, not a project standard, so it belongs in your global `~/.claude/` config rather than in the project. Install it once and it works across all your projects:
+
+```bash
+cargo install rust_token_killer
+rtk init -g --auto-patch
+```
+
+This sets up the rewrite hook in `~/.claude/settings.json` and a slim `RTK.md` reference in your global `~/.claude/CLAUDE.md`. Every Bash command Claude Code runs will be automatically routed through RTK's filters — no per-project setup needed.
+
 ## Contributing
 
 This template was built through iterative conversation about what actually goes wrong in production software. If you've seen failure modes that aren't covered, or if rules are too prescriptive for practical use, open an issue or PR.
