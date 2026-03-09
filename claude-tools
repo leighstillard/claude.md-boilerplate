@@ -33,26 +33,30 @@ EOF
 detect_languages() {
   local langs=()
 
-  if compgen -G "*.py" >/dev/null 2>&1 || compgen -G "**/*.py" >/dev/null 2>&1 || [[ -f "pyproject.toml" ]] || [[ -f "requirements.txt" ]] || [[ -f "setup.py" ]]; then
+  if compgen -G "*.py" >/dev/null 2>&1 || find . -name '*.py' -print -quit 2>/dev/null | grep -q . || [[ -f "pyproject.toml" ]] || [[ -f "requirements.txt" ]] || [[ -f "setup.py" ]]; then
     langs+=("python")
   fi
 
-  if compgen -G "*.go" >/dev/null 2>&1 || compgen -G "**/*.go" >/dev/null 2>&1 || [[ -f "go.mod" ]]; then
+  if compgen -G "*.go" >/dev/null 2>&1 || find . -name '*.go' -print -quit 2>/dev/null | grep -q . || [[ -f "go.mod" ]]; then
     langs+=("go")
   fi
 
-  if compgen -G "*.ts" >/dev/null 2>&1 || compgen -G "**/*.ts" >/dev/null 2>&1 || [[ -f "tsconfig.json" ]] || [[ -f "package.json" ]]; then
+  if compgen -G "*.ts" >/dev/null 2>&1 || find . -name '*.ts' -print -quit 2>/dev/null | grep -q . || [[ -f "tsconfig.json" ]] || [[ -f "package.json" ]]; then
     langs+=("typescript")
   fi
 
   if [[ ${#langs[@]} -eq 0 ]]; then
-    echo ""
+    return
   else
     printf '%s\n' "${langs[@]}"
   fi
 }
 
 prompt_language() {
+  if [[ ! -t 0 ]]; then
+    echo "ERROR: No languages detected and stdin is not interactive. Use --lang to specify." >&2
+    return 1
+  fi
   echo "No source files detected. Which language(s) will this project use?"
   echo ""
   echo "  1) Python"
@@ -115,7 +119,9 @@ install_rtk() {
   fi
 
   # Check if rtk is configured for Claude Code
-  if command -v rtk &>/dev/null || [[ "${dry_run}" == "true" ]]; then
+  if [[ "${dry_run}" == "true" ]]; then
+    echo "  DRY-RUN: would check hook status and run 'rtk init -g --auto-patch' if needed"
+  elif command -v rtk &>/dev/null; then
     local rtk_status
     rtk_status=$(rtk init --show 2>&1 || true)
 
@@ -123,11 +129,7 @@ install_rtk() {
       echo "  CONFIGURED: hook is set up"
     else
       echo "  CONFIGURING: running 'rtk init -g --auto-patch'..."
-      if [[ "${dry_run}" == "true" ]]; then
-        echo "  DRY-RUN: would run 'rtk init -g --auto-patch'"
-      else
-        rtk init -g --auto-patch
-      fi
+      rtk init -g --auto-patch
     fi
   fi
 
@@ -234,6 +236,8 @@ patch_settings() {
     echo "  Creating ${SETTINGS_FILE}..."
     if [[ "${dry_run}" == "true" ]]; then
       echo "  DRY-RUN: would create settings.json with ENABLE_LSP_TOOL=1"
+      echo "  DONE"
+      return
     else
       echo '{}' > "${SETTINGS_FILE}"
     fi
@@ -348,7 +352,12 @@ cmd_setup() {
 
   while [[ $# -gt 0 ]]; do
     case "${1}" in
-      --lang) forced_lang="${2}"; shift 2 ;;
+      --lang)
+        if [[ $# -lt 2 ]]; then
+          echo "ERROR: --lang requires an argument (python|go|typescript|all)" >&2
+          exit 1
+        fi
+        forced_lang="${2}"; shift 2 ;;
       --skip-rtk) skip_rtk="true"; shift ;;
       --skip-lsp) skip_lsp="true"; shift ;;
       --skip-plugins) skip_plugins="true"; shift ;;
@@ -369,11 +378,24 @@ cmd_setup() {
     else
       IFS=',' read -ra langs <<< "${forced_lang}"
     fi
+    # Validate language values
+    for lang in "${langs[@]}"; do
+      case "${lang}" in
+        python|go|typescript) ;;
+        *) echo "ERROR: Unknown language '${lang}'. Valid values: python, go, typescript, all" >&2; exit 1 ;;
+      esac
+    done
     echo "Languages (forced): ${langs[*]}"
   else
-    mapfile -t langs < <(detect_languages)
-    if [[ ${#langs[@]} -eq 0 ]] || [[ -z "${langs[0]}" ]]; then
-      mapfile -t langs < <(prompt_language)
+    langs=()
+    while IFS= read -r line; do
+      [[ -n "$line" ]] && langs+=("$line")
+    done < <(detect_languages)
+    if [[ ${#langs[@]} -eq 0 ]] || [[ -z "${langs[0]:-}" ]]; then
+      langs=()
+      while IFS= read -r line; do
+        [[ -n "$line" ]] && langs+=("$line")
+      done < <(prompt_language)
     fi
     echo "Languages (detected): ${langs[*]}"
   fi
@@ -395,11 +417,21 @@ cmd_setup() {
     echo "  OK: jq"
   fi
 
-  if ! command -v npm &>/dev/null; then
-    echo "  MISSING: npm (required for LSP servers)"
-    prereqs_ok="false"
-  else
-    echo "  OK: npm"
+  # npm is only needed for python (pyright) and typescript LSP servers
+  local needs_npm="false"
+  for lang in "${langs[@]}"; do
+    if [[ "${lang}" == "python" ]] || [[ "${lang}" == "typescript" ]]; then
+      needs_npm="true"
+      break
+    fi
+  done
+  if [[ "${needs_npm}" == "true" ]]; then
+    if ! command -v npm &>/dev/null; then
+      echo "  MISSING: npm (required for LSP servers)"
+      prereqs_ok="false"
+    else
+      echo "  OK: npm"
+    fi
   fi
 
   if ! command -v claude &>/dev/null; then
@@ -416,25 +448,35 @@ cmd_setup() {
   fi
 
   # Run installation steps
+  local setup_failed="false"
+
   if [[ "${skip_rtk}" != "true" ]]; then
-    install_rtk "${dry_run}" || true
+    install_rtk "${dry_run}" || setup_failed="true"
   fi
 
   if [[ "${skip_lsp}" != "true" ]]; then
-    install_lsp "${dry_run}" "${langs[@]}"
+    install_lsp "${dry_run}" "${langs[@]}" || setup_failed="true"
   fi
 
-  patch_settings "${dry_run}"
+  patch_settings "${dry_run}" || setup_failed="true"
 
   if [[ "${skip_plugins}" != "true" ]]; then
-    install_plugins "${dry_run}" "${langs[@]}"
+    install_plugins "${dry_run}" "${langs[@]}" || setup_failed="true"
   fi
 
   # Final summary
   echo ""
-  echo "========================================"
-  echo "  Setup complete!"
-  echo "========================================"
+  if [[ "${setup_failed}" == "true" ]]; then
+    echo "========================================"
+    echo "  Setup completed with warnings!"
+    echo "  Some components failed to install."
+    echo "  Review the output above for details."
+    echo "========================================"
+  else
+    echo "========================================"
+    echo "  Setup complete!"
+    echo "========================================"
+  fi
   echo ""
   echo "Next step: start a Claude Code session and ask:"
   echo ""
