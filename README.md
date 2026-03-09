@@ -237,7 +237,7 @@ The practical takeaway: if you connect the AWS, GitHub, Terraform, and one obser
 
 ### RTK (Rust Token Killer)
 
-[RTK](https://github.com/russ-mcp/rtk) is a CLI proxy that filters and compresses tool output before it reaches Claude Code's context window, saving 60–90% of tokens on common dev operations (git, ls, test runners, Docker, kubectl, etc.). It works via a Claude Code hook that transparently rewrites Bash commands — no changes to your project `CLAUDE.md` required.
+[RTK](https://github.com/rtk-ai/rtk) is a CLI proxy that filters and compresses tool output before it reaches Claude Code's context window, saving 60–90% of tokens on common dev operations (git, ls, test runners, Docker, kubectl, etc.). It works via a Claude Code hook that transparently rewrites Bash commands — no changes to your project `CLAUDE.md` required.
 
 RTK is a per-developer tool, not a project standard, so it belongs in your global `~/.claude/` config rather than in the project. Install it once and it works across all your projects:
 
@@ -247,6 +247,22 @@ rtk init -g --auto-patch
 ```
 
 This sets up the rewrite hook in `~/.claude/settings.json` and a slim `RTK.md` reference in your global `~/.claude/CLAUDE.md`. Every Bash command Claude Code runs will be automatically routed through RTK's filters — no per-project setup needed.
+
+### LSP (Language Server Protocol)
+
+Enabling [LSP in Claude Code](https://karanbansal.in/blog/claude-code-lsp/) gives it semantic understanding of your codebase instead of relying on grep-based file searching. With LSP, operations like go-to-definition, find-references, and type lookups resolve in ~50ms with guaranteed accuracy — compared to 30–60 seconds of reading files and pattern matching without it. The bigger win is code quality: when Claude modifies a function signature, LSP immediately flags every affected call site, so Claude fixes them proactively in a single turn instead of leaving broken references for you to find.
+
+To enable it, add `"ENABLE_LSP_TOOL": "1"` to `~/.claude/settings.json` and install language servers for your stack:
+
+| Language | Server |
+|---|---|
+| Python | `pyright` |
+| TypeScript / JavaScript | `typescript-language-server` |
+| Go | `gopls` |
+
+After installing, ensure the corresponding Claude Code plugins are both installed **and enabled** (plugins can be installed but disabled, which silently prevents LSP from working). Restart Claude Code after setup.
+
+Like RTK, LSP is a per-developer configuration — it doesn't require any changes to the project `CLAUDE.md`.
 
 ## Contributing
 
