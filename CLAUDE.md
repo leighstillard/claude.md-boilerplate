@@ -58,6 +58,14 @@
 - Tag every cloud resource and IaC template: `Project`, `Environment`, `CreatedBy: claude-code`.
 - Read `docs/standards/mcp-safety.md` before any MCP server interaction that involves write operations.
 
+## PR Merge Checklist
+
+Before accepting any PR, run all three:
+
+1. `/review-pr` — code review
+2. `/security-review` — security review
+3. `/simplify` — code simplifier
+
 ## Detailed Standards
 
 Read the relevant file before working in that domain:
